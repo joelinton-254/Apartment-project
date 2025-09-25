@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Apartment Management System</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background: #f0f2f5;
+    color: #333;
+}
+h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+.info-box {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: #ecf0f1;
+    border-radius: 6px;
+    font-size: 14px;
+}
+.form-box {
+    margin: 0 auto 20px auto;
+    padding: 15px;
+    background: #ffffff;
+    border-radius: 8px;
+    text-align: center;
+    max-width: 1200px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.form-box input, .form-box select {
+    padding: 6px;
+    margin: 4px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.form-box button {
+    padding: 6px 12px;
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.form-box button:hover {
+    background: #219150;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px;
+    background: #fff;
+    font-size: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 6px;
+    text-align: center;
+    vertical-align: middle;
+}
+th {
+    background: #2c3e50;
+    color: white;
+    font-weight: bold;
+}
+tr:nth-child(even) {
+    background: #f9f9f9;
+}
+input {
+    width: 60px;
+    padding: 4px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    text-align: right;
+}
+.total {
+    font-weight: bold;
+    color: #16a085;
+}
+.remove-btn {
+    background: #c0392b;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.remove-btn:hover {
+    background: #a93226;
+}
+tfoot td {
+    font-weight: bold;
+    background: #e3f2fd;
+}
+.save-msg {
+    margin-top: 10px;
+    text-align: center;
+    color: #27ae60;
+    font-weight: bold;
+    display: none;
+}
+img.tenant-photo {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+</style>
+</head>
+<body>
+
+<h1>Apartment Management System</h1>
+
+<div class="info-box">
+    <strong>Location:</strong> Rongai | 
+    <strong>Landlord:</strong> Karanja | 
+    <strong>Caretaker:</strong> Isaiah
+</div>
+
+<div class="form-box">
+    <input type="text" id="tenantName" placeholder="Tenant Name">
+    <select id="houseType">
+        <option value="Bedsitter">Bedsitter</option>
+        <option value="Studio">Studio</option>
+        <option value="1 Bedroom">1 Bedroom</option>
+        <option value="2 Bedroom">2 Bedroom</option>
+        <option value="3 Bedroom">3 Bedroom</option>
+    </select>
+    <input type="text" id="houseNumber" placeholder="House # (e.g. A5)">
+    <input type="number" id="rentAmount" placeholder="Rent Amount">
+    <input type="number" id="waterAmount" placeholder="Water">
+    <input type="number" id="electricityAmount" placeholder="Electricity">
+    <input type="number" id="garbageAmount" placeholder="Garbage">
+    <input type="number" id="internetAmount" placeholder="Internet">
+    <input type="file" id="tenantPhoto" accept="image/*">
+    <button onclick="addTenant()">Add Tenant</button>
+</div>
+
+<table id="apartmentTable">
+<thead>
+<tr>
+<th>Photo</th>
+<th>Tenant</th>
+<th>Type</th>
+<th>House</th>
+<th>Rent</th>
+<th>Water</th>
+<th>Electricity</th>
+<th>Garbage</th>
+<th>Internet</th>
+<th>Utilities Total</th>
+<th>Rent Total Monthly</th>
+<th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th>
+<th>May</th><th>Jun</th><th>Jul</th><th>Aug</th>
+<th>Sep</th><th>Oct</th><th>Nov</th><th>Dec</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody></tbody>
+<tfoot>
+<tr id="totalsRow">
+<td colspan="5">Totals per Month</td>
+<td id="totalWater">0</td>
+<td id="totalElectricity">0</td>
+<td id="totalGarbage">0</td>
+<td id="totalInternet">0</td>
+<td id="totalUtilities">0</td>
+<td id="totalRent">0</td>
+<td id="totalJan">0</td>
+<td id="totalFeb">0</td>
+<td id="totalMar">0</td>
+<td id="totalApr">0</td>
+<td id="totalMay">0</td>
+<td id="totalJun">0</td>
+<td id="totalJul">0</td>
+<td id="totalAug">0</td>
+<td id="totalSep">0</td>
+<td id="totalOct">0</td>
+<td id="totalNov">0</td>
+<td id="totalDec">0</td>
+<td></td>
+</tr>
+</tfoot>
+</table>
+
+<div class="save-msg" id="saveMsg">Saved ✔</div>
+
+<script>
+const tableBody = document.querySelector("#apartmentTable tbody");
+const saveMsg = document.getElementById("saveMsg");
+const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+let tenants = [
+{name:"Joel", type:"1 Bedroom", house:"A1", rent:10000, water:0, electricity:0, garbage:0, internet:0, photo:""},
+{name:"Dayan", type:"3 Bedroom", house:"A2", rent:21000, water:0, electricity:0, garbage:0, internet:0, photo:""},
+{name:"Suzan", type:"2 Bedroom", house:"B1", rent:15000, water:0, electricity:0, garbage:0, internet:0, photo:""}
+];
+
+const saved = JSON.parse(localStorage.getItem("apartmentData"));
+if(saved) tenants = saved;
+
+function renderTable(){
+    tableBody.innerHTML = "";
+    let totalWater=0, totalElectricity=0, totalGarbage=0, totalInternet=0, totalRent=0;
+    let monthTotals = {}; months.forEach(m=>monthTotals[m]=0);
+
+    tenants.forEach((t,i)=>{
+        let utilitiesTotal = Number(t.water||0) + Number(t.electricity||0) + Number(t.garbage||0) + Number(t.internet||0);
+        totalWater += Number(t.water||0); totalElectricity += Number(t.electricity||0);
+        totalGarbage += Number(t.garbage||0); totalInternet += Number(t.internet||0);
+        totalRent += Number(t.rent||0);
+        months.forEach(m=>{ monthTotals[m] += Number(t[m]||0); });
+
+        let row = document.createElement("tr");
+        let photoHTML = t.photo ? `<img src="${t.photo}" class="tenant-photo">` : "";
+        let rowHTML = `<td>${photoHTML}</td>
+                       <td>${t.name}</td>
+                       <td>${t.type}</td>
+                       <td>${t.house}</td>
+                       <td><input type="number" value="${t.rent||0}" oninput="updateTenant(${i},'rent',this.value)"></td>
+                       <td><input type="number" value="${t.water||0}" oninput="updateTenant(${i},'water',this.value)"></td>
+                       <td><input type="number" value="${t.electricity||0}" oninput="updateTenant(${i},'electricity',this.value)"></td>
+                       <td><input type="number" value="${t.garbage||0}" oninput="updateTenant(${i},'garbage',this.value)"></td>
+                       <td><input type="number" value="${t.internet||0}" oninput="updateTenant(${i},'internet',this.value)"></td>
+                       <td class="total">${utilitiesTotal}</td>
+                       <td class="total">${Number(t.rent||0)+utilitiesTotal}</td>`;
+        months.forEach(m=>{
+            let val = Number(t[m]||0);
+            rowHTML += `<td><input type="number" value="${val}" oninput="updateMonth(${i},'${m}',this.value)"></td>`;
+        });
+        rowHTML += `<td><button class="remove-btn" onclick="removeTenant(${i})">Remove</button></td>`;
+        row.innerHTML = rowHTML;
+        tableBody.appendChild(row);
+    });
+
+    document.getElementById("totalWater").innerText = totalWater;
+    document.getElementById("totalElectricity").innerText = totalElectricity;
+    document.getElementById("totalGarbage").innerText = totalGarbage;
+    document.getElementById("totalInternet").innerText = totalInternet;
+    document.getElementById("totalUtilities").innerText = totalWater+totalElectricity+totalGarbage+totalInternet;
+    document.getElementById("totalRent").innerText = totalRent;
+    months.forEach(m=>{ document.getElementById("total"+m).innerText = monthTotals[m]; });
+
+    saveData();
+}
+
+function updateTenant(i,field,value){ tenants[i][field] = Number(value)||0; renderTable(); }
+function updateMonth(i,month,value){ tenants[i][month] = Number(value)||0; renderTable(); }
+
+function addTenant(){
+    const name = document.getElementById("tenantName").value.trim();
+    const type = document.getElementById("houseType").value;
+    const house = document.getElementById("houseNumber").value.trim();
+    const rent = Number(document.getElementById("rentAmount").value)||0;
+    const water = Number(document.getElementById("waterAmount").value)||0;
+    const electricity = Number(document.getElementById("electricityAmount").value)||0;
+    const garbage = Number(document.getElementById("garbageAmount").value)||0;
+    const internet = Number(document.getElementById("internetAmount").value)||0;
+    const photoInput = document.getElementById("tenantPhoto");
+    let photo = "";
+
+    if(photoInput.files && photoInput.files[0]){
+        const reader = new FileReader();
+        reader.onload = function(e){ 
+            photo = e.target.result;
+            tenants.push({name,type,house,rent,water,electricity,garbage,internet,photo});
+            renderTable();
+        }
+        reader.readAsDataURL(photoInput.files[0]);
+    } else {
+        tenants.push({name,type,house,rent,water,electricity,garbage,internet,photo});
+        renderTable();
+    }
+
+    document.getElementById("tenantName").value="";
+    document.getElementById("houseNumber").value="";
+    document.getElementById("rentAmount").value="";
+    document.getElementById("waterAmount").value="";
+    document.getElementById("electricityAmount").value="";
+    document.getElementById("garbageAmount").value="";
+    document.getElementById("internetAmount").value="";
+    photoInput.value="";
+}
+
+function removeTenant(i){ if(confirm("Remove this tenant?")){ tenants.splice(i,1); renderTable(); } }
+function saveData(){ localStorage.setItem("apartmentData",JSON.stringify(tenants)); saveMsg.style.display="block"; setTimeout(()=>saveMsg.style.display="none",800); }
+
+renderTable();
+</script>
+
+</body>
+</html>
